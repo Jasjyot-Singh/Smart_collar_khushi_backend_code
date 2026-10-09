@@ -9,6 +9,13 @@ class MovementData(BaseModel):
     accel_variance: float = 0.0
     gyro_variance: float = 0.0
     inferred_state: str = "resting"  # resting | walking | running | shaking
+    accel_x: float = 0.0
+    accel_y: float = 0.0
+    accel_z: float = 0.0
+    gyro_x: float = 0.0
+    gyro_y: float = 0.0
+    gyro_z: float = 0.0
+    gait_asymmetry_score: float = 0.0
 
 
 class CoordinatesPayload(BaseModel):
