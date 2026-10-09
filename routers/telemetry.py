@@ -13,6 +13,7 @@ from models import Dog, Alert, TrailPoint
 from schemas.telemetry import TelemetryPayload, TelemetryResponse
 from services.ai_service import ai_service
 from config import UPLOAD_DIR
+from models.telemetry_ai import CollarRawTelemetry
 
 router = APIRouter(prefix="/api/v1", tags=["ESP32 Telemetry"])
 
@@ -65,6 +66,23 @@ async def ingest_telemetry(payload: TelemetryPayload, db: Session = Depends(get_
             lng=lng_val,
         )
         db.add(trail)
+
+    # ── Save Raw Telemetry Data to DB ────────────────────────────────────────
+    raw_telemetry = CollarRawTelemetry(
+        dog_id=dog.id,
+        collar_hardware_id=payload.collar_mac or payload.collar_id or dog.collar_hardware_id,
+        lat=lat_val,
+        lng=lng_val,
+        accuracy_meters=dog.accuracy_meters,
+        accel_x=payload.movement.accel_x if payload.movement else None,
+        accel_y=payload.movement.accel_y if payload.movement else None,
+        accel_z=payload.movement.accel_z if payload.movement else None,
+        gyro_x=payload.movement.gyro_x if payload.movement else None,
+        gyro_y=payload.movement.gyro_y if payload.movement else None,
+        gyro_z=payload.movement.gyro_z if payload.movement else None,
+        battery_percent=payload.battery_percent
+    )
+    db.add(raw_telemetry)
 
     # ── AI: Temperature check ────────────────────────────────────────────────
     temp_result = ai_service.check_temperature(payload.temperature_c)
